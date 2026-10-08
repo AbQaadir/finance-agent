@@ -97,3 +97,33 @@ spec:
                 secretKeyRef:
                   name: stripe-restricted-write-key
                   key: latest
+---
+apiVersion: run.googleapis.com/v1
+kind: Job
+metadata:
+  name: salon-recon-job
+spec:
+  template:
+    spec:
+      template:
+        spec:
+          serviceAccountName: recon-job-sa@PROJECT_ID.iam.gserviceaccount.com
+          containers:
+            - image: gcr.io/PROJECT_ID/salon-payments-api:latest
+              command: ["uv", "run", "python", "main.py", "recon-job"]
+              resources:
+                limits:
+                  cpu: "1000m"
+                  memory: "512Mi"
+              env:
+                - name: DATABASE_URL
+                  valueFrom:
+                    secretKeyRef:
+                      name: salon-db-url
+                      key: latest
+                - name: STRIPE_API_KEY
+                  valueFrom:
+                    secretKeyRef:
+                      name: stripe-restricted-read-key
+                      key: latest
+

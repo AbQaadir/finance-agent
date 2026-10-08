@@ -1,7 +1,8 @@
 """
-Synthetic data generator for Salon Payments Ops.
-Generates healthy balanced transactions and injects realistic reconciliation discrepancies.
+Simulation and testing harness data generator for Salon Payments Ops.
+Generates balanced transactions and injects reconciliation discrepancy scenarios for evaluations.
 """
+
 
 import uuid
 from typing import List, Dict, Any, Tuple, Optional

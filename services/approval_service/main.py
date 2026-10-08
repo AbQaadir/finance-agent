@@ -10,24 +10,31 @@ from pydantic import BaseModel, Field
 from sqlalchemy.orm import Session
 from sqlalchemy import select
 
-from libs.ledger.engine import get_db_session, init_db
+from libs.ledger.engine import get_db_session, init_db, check_db_health
 from libs.ledger.models import Proposal, ExceptionRecord, AuditLog
 from libs.ledger.operations import record_audit
+from libs.observability import setup_logger
+from services.common.auth import CorrelationIdMiddleware, verify_approval_auth
 from .executor import execute_approved_proposal, ExecutionError
+
+logger = setup_logger("approval-service")
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     init_db()
+    logger.info("Approval Service initialized and database ready.")
     yield
 
 
 app = FastAPI(
     title="Salon Payments Approval Service",
-    version="0.1.0",
-    description="Human decision gate for exception fix proposals. Only this service executes financial actions.",
+    version="1.0.0",
+    description="Enterprise human decision gate for exception fix proposals. Only this service executes financial actions.",
     lifespan=lifespan,
 )
+
+app.add_middleware(CorrelationIdMiddleware)
 
 
 def get_db():
@@ -56,11 +63,20 @@ class ProposalOut(BaseModel):
     created_at: Optional[str] = None
 
 
-# ===================== ENDPOINTS =====================
+# ===================== HEALTH ENDPOINTS =====================
 
 @app.get("/health")
-def health_check():
+@app.get("/health/live")
+def liveness():
     return {"status": "ok", "service": "approval_service"}
+
+
+@app.get("/health/ready")
+def readiness():
+    is_healthy = check_db_health()
+    if not is_healthy:
+        raise HTTPException(status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail="Database unhealthy")
+    return {"status": "ready", "database": "connected"}
 
 
 @app.get("/v1/proposals")
@@ -119,8 +135,10 @@ def decide_proposal(
     proposal_id: str,
     req: DecisionRequest,
     db: Session = Depends(get_db),
+    _auth: bool = Depends(verify_approval_auth),
 ):
     p = db.scalar(select(Proposal).where(Proposal.id == proposal_id))
+
     if not p:
         raise HTTPException(status_code=404, detail="Proposal not found")
 

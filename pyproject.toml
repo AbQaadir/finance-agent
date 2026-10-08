@@ -1,11 +1,13 @@
 [project]
 name = "finance-agent"
-version = "0.1.0"
-description = "Add your description here"
+version = "1.0.0"
+description = "Enterprise Salon Payments Ops Agent on Google ADK and Cloud Run"
 readme = "README.md"
+
 requires-python = ">=3.10"
 dependencies = [
     "aiosqlite>=0.20.0",
+    "alembic>=1.13.0",
     "fastapi>=0.110.0",
     "google-adk>=2.11.0",
     "httpx>=0.27.0",

@@ -13,7 +13,7 @@ from .models import (
     Proposal,
     AuditLog,
 )
-from .engine import get_engine, get_db_session, init_db, SessionFactory
+from .engine import get_engine, get_db_session, init_db, check_db_health, SessionFactory
 from .operations import (
     post_journal_entry,
     get_account_balances,
@@ -35,6 +35,7 @@ __all__ = [
     "get_engine",
     "get_db_session",
     "init_db",
+    "check_db_health",
     "SessionFactory",
     "post_journal_entry",
     "get_account_balances",
@@ -42,3 +43,4 @@ __all__ = [
     "LedgerInvariantViolation",
     "VALID_ACCOUNTS",
 ]
+

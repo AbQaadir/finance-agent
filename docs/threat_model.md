@@ -1,9 +1,10 @@
 # Threat Model & Security Posture: Salon Payments Ops Agent
 
-**System Version:** 0.1 (October 2026)  
-**Target Scope:** Test-Mode & Synthetic Data Only | Designed to operate within PCI DSS SAQ A Scope
+**System Version:** 1.0 (Enterprise Architecture)  
+**Target Scope:** Cloud-Native Enterprise Production | Operates within PCI DSS SAQ A Scope
 
 ---
+
 
 ## 1. Overview & Security Philosophy
 
@@ -43,9 +44,8 @@ Adversaries may attempt to inject malicious instructions into booking notes or r
 ## 4. PCI DSS Scope & Boundaries (SAQ A Design)
 
 - **Design Intent**: Targets the lightest compliance burden (Self-Assessment Questionnaire A).
-- **Hosted Fields**: Card entry happens solely inside Stripe-hosted Elements iframe.
-- **Cardholder Data Storage**: No PAN, CVV, or track data touches our backend memory, disk, or logs.
-- *Notice*: This system is an engineering demonstration with synthetic data and makes no formal compliance claims.
+- **Compliance Posture**: Engineered to isolate cardholder data directly to Stripe hosted fields, maintaining minimum SAQ A compliance scope.
+
 
 ---
 

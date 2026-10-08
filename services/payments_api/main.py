@@ -12,27 +12,32 @@ from pydantic import BaseModel, Field
 from sqlalchemy.orm import Session
 from sqlalchemy import select
 
-from libs.ledger.engine import get_db_session, init_db
+from libs.config import settings
+from libs.ledger.engine import get_db_session, init_db, check_db_health
 from libs.ledger.models import Order, Payment, StripeEvent
 from libs.redaction.sanitizer import sanitize_free_text
+from libs.observability import setup_logger
+from services.common.auth import CorrelationIdMiddleware, verify_payments_auth
 from .stripe_client import default_stripe_adapter, StripeAdapter
 
-WEBHOOK_SECRET = os.getenv("STRIPE_WEBHOOK_SECRET", "whsec_mock")
+logger = setup_logger("payments-api")
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     init_db()
+    logger.info("Payments API initialized and database ready.")
     yield
 
 
 app = FastAPI(
     title="Salon Payments API",
-    version="0.1.0",
-    description="Processes salon deposits, fees, checkout tips, and webhook events.",
+    version="1.0.0",
+    description="Enterprise API processing salon booking deposits, checkout tips, fees, and webhooks.",
     lifespan=lifespan,
 )
 
+app.add_middleware(CorrelationIdMiddleware)
 
 
 # Dependency
@@ -79,19 +84,33 @@ class RefundRequest(BaseModel):
     idempotency_key: str
 
 
-# ===================== ENDPOINTS =====================
+# ===================== HEALTH ENDPOINTS =====================
 
 @app.get("/health")
-def health_check():
+@app.get("/health/live")
+def liveness():
     return {"status": "ok", "service": "payments_api"}
 
 
+@app.get("/health/ready")
+def readiness():
+    is_healthy = check_db_health()
+    if not is_healthy:
+        raise HTTPException(status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail="Database unhealthy")
+    return {"status": "ready", "database": "connected"}
+
+
 @app.post("/v1/orders/deposit", status_code=status.HTTP_201_CREATED)
-def create_deposit(req: DepositRequest, db: Session = Depends(get_db)):
+def create_deposit(
+    req: DepositRequest,
+    db: Session = Depends(get_db),
+    _auth: bool = Depends(verify_payments_auth),
+):
     # Order-level idempotency check
     existing_order = db.scalar(
         select(Order).where(Order.idempotency_key == req.idempotency_key)
     )
+
     if existing_order:
         existing_payment = db.scalar(
             select(Payment).where(Payment.order_id == existing_order.id)
@@ -152,7 +171,11 @@ def create_deposit(req: DepositRequest, db: Session = Depends(get_db)):
 
 
 @app.post("/v1/orders/no-show", status_code=status.HTTP_201_CREATED)
-def charge_no_show(req: NoShowRequest, db: Session = Depends(get_db)):
+def charge_no_show(
+    req: NoShowRequest,
+    db: Session = Depends(get_db),
+    _auth: bool = Depends(verify_payments_auth),
+):
     existing = db.scalar(select(Order).where(Order.idempotency_key == req.idempotency_key))
     if existing:
         return {"order_id": existing.id, "status": existing.status, "idempotency_replayed": True}
@@ -195,7 +218,11 @@ def charge_no_show(req: NoShowRequest, db: Session = Depends(get_db)):
 
 
 @app.post("/v1/orders/checkout", status_code=status.HTTP_201_CREATED)
-def checkout_service(req: CheckoutRequest, db: Session = Depends(get_db)):
+def checkout_service(
+    req: CheckoutRequest,
+    db: Session = Depends(get_db),
+    _auth: bool = Depends(verify_payments_auth),
+):
     existing = db.scalar(select(Order).where(Order.idempotency_key == req.idempotency_key))
     if existing:
         return {"order_id": existing.id, "status": existing.status, "idempotency_replayed": True}
@@ -248,7 +275,12 @@ def checkout_service(req: CheckoutRequest, db: Session = Depends(get_db)):
 
 
 @app.post("/v1/orders/{order_id}/refund")
-def refund_order(order_id: str, req: RefundRequest, db: Session = Depends(get_db)):
+def refund_order(
+    order_id: str,
+    req: RefundRequest,
+    db: Session = Depends(get_db),
+    _auth: bool = Depends(verify_payments_auth),
+):
     order = db.scalar(select(Order).where(Order.id == order_id))
     if not order:
         raise HTTPException(status_code=404, detail="Order not found")
@@ -288,8 +320,9 @@ async def stripe_webhook(
         event = default_stripe_adapter.verify_webhook_signature(
             payload=body,
             sig_header=stripe_signature,
-            secret=WEBHOOK_SECRET,
+            secret=settings.stripe_webhook_secret,
         )
+
     except Exception as e:
         raise HTTPException(status_code=400, detail=f"Invalid webhook signature: {str(e)}")
 

@@ -1,8 +1,9 @@
 # Architecture Reference: Salon Payments Ops Agent
 
-**Google ADK on Cloud Run | Portfolio Architecture | Version 0.1**
+**Google ADK on Cloud Run | Enterprise Financial Architecture | Version 1.0**
 
 ---
+
 
 ## 1. System Topology
 

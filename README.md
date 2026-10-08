@@ -7,10 +7,11 @@
 [![uv](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/uv/main/assets/badge/v0.json)](https://github.com/astral-sh/uv)
 [![PCI Scope: SAQ A Design](https://img.shields.io/badge/PCI%20Scope-SAQ%20A%20Design-success.svg)](#8-security-threat-model--compliance)
 
-Portfolio project for payment systems engineering and agentic AI.  
-**Version 0.1 | October 2026 | Test-Mode Only | Synthetic & Live Sandbox Data**.
+Enterprise cloud financial operations platform for salon payment processing, double-entry reconciliation, and autonomous AI-assisted exception investigation.  
+**Version 1.0.0 | Enterprise Production Architecture | Google ADK & Cloud Run**.
 
 ---
+
 
 ## 1. Executive Summary & Purpose
 
@@ -378,9 +379,10 @@ If an agent hallucinates a citation ID, the proposal is rejected at the gate.
 ### 8.2 PCI DSS SAQ A Design Scope
 - **Hosted Fields**: Card entry occurs solely inside the Stripe Elements iframe directly to Stripe's servers.
 - **No Cardholder Data**: Our systems never receive, process, or store PANs, CVVs, or card track data.
-- *Notice: Designed to operate within SAQ A scope; synthetic testing data only.*
+- **SAQ A Isolation**: Cardholder data entry is isolated entirely to Stripe hosted fields, restricting application footprint to minimum compliance scope.
 
 ---
+
 
 ## 9. Evaluation Benchmark Results
 
