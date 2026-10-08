@@ -1,0 +1,99 @@
+# Google Cloud Run Service Definitions for Salon Payments Ops
+# Security boundaries:
+# - payments-api: Public ingress with auth / webhook signature verification
+# - agent-service: Internal ingress, IAM invoker authentication only
+# - approval-service: Internal ingress / authenticated console, holds restricted Stripe key
+# - recon-job: Cloud Run Job invoked on schedule by Cloud Scheduler
+
+apiVersion: serving.knative.dev/v1
+kind: Service
+metadata:
+  name: salon-payments-api
+  annotations:
+    run.googleapis.com/ingress: all
+spec:
+  template:
+    metadata:
+      annotations:
+        autoscaling.knative.dev/minScale: "0"
+        autoscaling.knative.dev/maxScale: "10"
+    spec:
+      serviceAccountName: payments-api-sa@PROJECT_ID.iam.gserviceaccount.com
+      containers:
+        - image: gcr.io/PROJECT_ID/salon-payments-api:latest
+          resources:
+            limits:
+              cpu: "1000m"
+              memory: "512Mi"
+          env:
+            - name: DATABASE_URL
+              valueFrom:
+                secretKeyRef:
+                  name: salon-db-url
+                  key: latest
+            - name: STRIPE_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: stripe-restricted-read-key
+                  key: latest
+---
+apiVersion: serving.knative.dev/v1
+kind: Service
+metadata:
+  name: salon-agent-service
+  annotations:
+    run.googleapis.com/ingress: internal
+spec:
+  template:
+    metadata:
+      annotations:
+        autoscaling.knative.dev/minScale: "0"
+        autoscaling.knative.dev/maxScale: "5"
+    spec:
+      serviceAccountName: agent-service-sa@PROJECT_ID.iam.gserviceaccount.com
+      containers:
+        - image: gcr.io/PROJECT_ID/salon-agent-service:latest
+          resources:
+            limits:
+              cpu: "2000m"
+              memory: "1024Mi"
+          env:
+            - name: GOOGLE_GENAI_USE_VERTEXAI
+              value: "TRUE"
+            - name: DATABASE_URL
+              valueFrom:
+                secretKeyRef:
+                  name: salon-db-url
+                  key: latest
+---
+apiVersion: serving.knative.dev/v1
+kind: Service
+metadata:
+  name: salon-approval-service
+  annotations:
+    run.googleapis.com/ingress: internal-and-cloud-load-balancing
+spec:
+  template:
+    metadata:
+      annotations:
+        autoscaling.knative.dev/minScale: "0"
+        autoscaling.knative.dev/maxScale: "2"
+    spec:
+      serviceAccountName: approval-service-sa@PROJECT_ID.iam.gserviceaccount.com
+      containers:
+        - image: gcr.io/PROJECT_ID/salon-approval-service:latest
+          resources:
+            limits:
+              cpu: "1000m"
+              memory: "512Mi"
+          env:
+            - name: DATABASE_URL
+              valueFrom:
+                secretKeyRef:
+                  name: salon-db-url
+                  key: latest
+            - name: STRIPE_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: stripe-restricted-write-key
+                  key: latest
