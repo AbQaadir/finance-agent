@@ -8,6 +8,7 @@ import sys
 import time
 from typing import Dict, Any, List
 from pathlib import Path
+import pytest
 from dotenv import load_dotenv
 
 project_root = Path(__file__).resolve().parent.parent.parent
@@ -17,11 +18,6 @@ sys.path.insert(0, str(project_root))
 load_dotenv(project_root / ".env")
 GOOGLE_API_KEY = os.getenv("GOOGLE_API_KEY")
 GOOGLE_MODEL = os.getenv("GOOGLE_MODEL", "gemini-3.8-flash")
-
-
-if not GOOGLE_API_KEY:
-    print("ERROR: GOOGLE_API_KEY not found in .env file! Live testing requires valid credentials.")
-    sys.exit(1)
 
 from fastapi.testclient import TestClient
 from sqlalchemy import select
@@ -57,6 +53,10 @@ def print_section(title: str):
 
 
 def run_live_test_suite():
+    if not GOOGLE_API_KEY:
+        print("ERROR: GOOGLE_API_KEY not found in .env file! Live testing requires valid credentials.")
+        sys.exit(1)
+
     print_section(f"Starting Live Test with Gemini ({GOOGLE_MODEL})")
     print(f"• Google API Key loaded: {'*' * 8}{GOOGLE_API_KEY[-6:]}")
     print(f"• Model target: {GOOGLE_MODEL}")
@@ -280,6 +280,13 @@ def run_live_test_suite():
             print(f"  • {acct.ljust(20)}: Debit={b['total_debit']} | Credit={b['total_credit']} | Net={b['net_balance']}")
 
     print_section("LIVE TEST EXECUTION COMPLETE: ALL 5 STAGES PASSED SUCCESSFULLY!")
+
+
+@pytest.mark.live
+@pytest.mark.skipif(not os.getenv("GOOGLE_API_KEY"), reason="GOOGLE_API_KEY not configured in .env; skipping live E2E test")
+def test_live_e2e_suite():
+    """Live end-to-end integration test against Gemini and Google ADK."""
+    run_live_test_suite()
 
 
 if __name__ == "__main__":
