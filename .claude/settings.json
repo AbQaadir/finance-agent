@@ -1,0 +1,44 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(uv run pytest *)",
+      "Bash(uv run python -m evals.runner*)",
+      "Bash(uv run python main.py evals*)",
+      "Bash(uv run python main.py info*)",
+      "Bash(uv run python main.py recon-job*)",
+      "Bash(uv run alembic current*)",
+      "Bash(uv run alembic history*)",
+      "Bash(uv run alembic heads*)",
+      "Bash(git status*)",
+      "Bash(git diff*)",
+      "Bash(git log*)",
+      "Bash(git branch*)"
+    ],
+    "ask": [
+      "Bash(git push *)",
+      "Bash(uv run alembic upgrade *)",
+      "Bash(uv run alembic downgrade *)",
+      "Bash(uv run alembic revision *)",
+      "Bash(uv run python main.py live-test*)"
+    ],
+    "deny": [
+      "Read(./.env)",
+      "Read(./.env.*)",
+      "Edit(./.env)",
+      "Write(./.env)"
+    ]
+  },
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Edit|Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "uv run python .claude/hooks/protect_sensitive_files.py"
+          }
+        ]
+      }
+    ]
+  }
+}

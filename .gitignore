@@ -14,3 +14,7 @@ wheels/
 .env
 .pytest_cache/
 
+# Claude Code local configuration and worktrees
+CLAUDE.local.md
+.claude/settings.local.json
+.claude/worktrees/
