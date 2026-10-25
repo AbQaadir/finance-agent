@@ -3,6 +3,7 @@
 [![CI/CD](https://github.com/salon-payments-ops/finance-agent/actions/workflows/ci.yml/badge.svg)](https://github.com/salon-payments-ops/finance-agent/actions)
 [![Python 3.10+](https://img.shields.io/badge/python-3.10+-blue.svg)](https://www.python.org/downloads/)
 [![Google ADK 2.11+](https://img.shields.io/badge/Google%20ADK-2.11.0-4285F4.svg)](https://adk.dev/)
+[![NVIDIA NeMo Guardrails](https://img.shields.io/badge/NVIDIA%20NeMo%20Guardrails-0.24+-76B900.svg)](https://github.com/NVIDIA/NeMo-Guardrails)
 [![Gemini 2.5/3.8](https://img.shields.io/badge/Google%20Gemini-3.8--flash-orange.svg)](https://deepmind.google/technologies/gemini/)
 [![uv](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/uv/main/assets/badge/v0.json)](https://github.com/astral-sh/uv)
 [![PCI Scope: SAQ A Design](https://img.shields.io/badge/PCI%20Scope-SAQ%20A%20Design-success.svg)](#8-security-threat-model--compliance)
@@ -294,7 +295,7 @@ The exception investigation system is implemented natively using **Google ADK (A
 | **Proposer Agent** | Synthesizes evidence citations into a formal, structured correction proposal. | `create_proposal` (Writes ONLY to proposals table) | Gemini 2.5 / 3.8 Flash |
 | **Reporter Agent** | Aggregates exception resolution counts and produces operational digests. | `generate_report` | Gemini 2.5 / 3.8 Flash |
 
-### 6.2 ADK Enterprise Callbacks & Guardrails
+### 6.2 ADK Enterprise Callbacks & NVIDIA NeMo Guardrails
 
 The ADK agents are wrapped with three deterministic lifecycle callbacks:
 

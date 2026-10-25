@@ -16,6 +16,7 @@ from libs.config import settings
 from libs.ledger.engine import get_db_session, init_db, check_db_health
 from libs.ledger.models import Order, Payment, StripeEvent
 from libs.redaction.sanitizer import sanitize_free_text
+from libs.guardrails import get_guardrails_service
 from libs.observability import setup_logger
 from services.common.auth import CorrelationIdMiddleware, verify_payments_auth
 from .stripe_client import default_stripe_adapter, StripeAdapter
@@ -124,7 +125,7 @@ def create_deposit(
         }
 
     # Sanitize any free-text notes
-    safe_note = sanitize_free_text(req.customer_note) if req.customer_note else ""
+    safe_note = get_guardrails_service().guard_input(req.customer_note) if req.customer_note else ""
 
     # Create Stripe PaymentIntent
     metadata = {

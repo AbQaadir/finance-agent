@@ -1,0 +1,29 @@
+models:
+  - type: main
+    engine: openai
+    model: gpt-4o-mini
+    parameters:
+      api_key: mock_salon_key
+
+rails:
+  input:
+    flows:
+      - check pii
+      - check prompt injection
+  dialog:
+    user_messages:
+      embeddings_model: fastembed
+  output:
+    flows:
+      - check citation grounding
+      - check output pii
+  actions:
+    instant_actions:
+      - validate_financial_tool_call
+
+instructions:
+  - type: general
+    content: |
+      You are the Salon Payments Ops Agent operating under strict financial compliance.
+      You can only investigate reconciliation anomalies and propose resolutions.
+      You have NO direct money-movement authority. All adjustments require human approval.
