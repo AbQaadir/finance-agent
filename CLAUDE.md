@@ -20,7 +20,7 @@ Enterprise financial operations platform pairing a deterministic double-entry ac
 3. **Hamilton-Hare Tip Splitting**: Multi-staff tip splits in `libs/tipsplit/calculator.py` must use basis points summing to `10000` (100.00%) and allocate remainders via the Hamilton-Hare largest-remainder method so `sum(allocated) == total_tip_minor`.
 4. **Proposer-Only Agent Boundary**: IMPORTANT: `services/agent_service/` has ZERO money-movement capabilities. Agents may only invoke read-only query tools and `create_proposal` (writing solely to the `proposals` table). Financial execution happens exclusively in `services/approval_service/executor.py` after human approval.
 5. **Evidence Citation Grounding**: Every agent proposal must pass non-empty `evidence_ids` that resolve to real database records (`ExceptionRecord`, `Payment`, `LedgerEntry`, or `Order`).
-6. **Default-Deny Policy & PII Redaction**: Every ADK tool must be whitelisted in `libs/policy/rules.py` (`ALLOWED_TOOLS`) and enforced via `before_tool_callback`. Free-text inputs must pass through `libs/redaction/sanitizer.py` before reaching the LLM.
+6. **NVIDIA NeMo Guardrails & Policy Enforcement**: Every tool must be whitelisted in `libs/policy/rules.py` (`ALLOWED_TOOLS`) and enforced via `libs/guardrails/` action rails. Input rails sanitize free-text and redact PII. Dialog rails (Colang) block off-topic queries and direct payment attempts. Output rails assert 100% database evidence citation grounding.
 7. **PCI DSS SAQ A Scope**: Never accept, log, or persist raw card numbers (PAN/CVC). Only handle opaque Stripe tokens and `PaymentIntent` IDs (`pi_*`).
 
 ## Workflow & Verification Rules
