@@ -1,0 +1,102 @@
+[
+  {
+    "id": "disp_01",
+    "name": "Dispute: Lead stylist tip split dispute after colorist cancellation",
+    "kind": "amount_mismatch",
+    "delta_minor": 3000,
+    "stripe_ref": "pi_disp_01",
+    "ledger_ref": "pay_disp_01",
+    "expected_action": "post_ledger_adjustment",
+    "customer_note": "Colorist was absent; 100% of tip should have been allocated to lead stylist."
+  },
+  {
+    "id": "disp_02",
+    "name": "Dispute: Partial deposit refund with 50% cancellation fee",
+    "kind": "duplicate_charge",
+    "delta_minor": 5000,
+    "stripe_ref": "pi_disp_02",
+    "ledger_ref": "pay_disp_02",
+    "expected_action": "refund_customer",
+    "customer_note": "Customer cancelled 12h prior. Refund 50% deposit portion."
+  },
+  {
+    "id": "disp_03",
+    "name": "Dispute: Retroactive promotional voucher discount applied at checkout",
+    "kind": "amount_mismatch",
+    "delta_minor": 2000,
+    "stripe_ref": "pi_disp_03",
+    "ledger_ref": "pay_disp_03",
+    "expected_action": "post_ledger_adjustment",
+    "customer_note": "Front desk forgot to apply 20% spring promotion coupon code at checkout."
+  },
+  {
+    "id": "disp_04",
+    "name": "Dispute: Dropped webhook on multi-staff bridal checkout with 3 tip splits",
+    "kind": "missing_in_ledger",
+    "delta_minor": 45000,
+    "stripe_ref": "pi_disp_04",
+    "ledger_ref": null,
+    "expected_action": "post_ledger_adjustment",
+    "customer_note": "Bridal package for party of 4 stylists."
+  },
+  {
+    "id": "disp_05",
+    "name": "Dispute: Accidental double tap on salon contactless terminal",
+    "kind": "duplicate_charge",
+    "delta_minor": 7500,
+    "stripe_ref": "pi_disp_05",
+    "ledger_ref": "pay_disp_05",
+    "expected_action": "refund_customer",
+    "customer_note": "Card was tapped twice within 2 seconds on terminal 03."
+  },
+  {
+    "id": "disp_06",
+    "name": "Dispute: Bank payout bounce due to invalid salon routing number",
+    "kind": "failed_payout",
+    "delta_minor": 85000,
+    "stripe_ref": "po_disp_06",
+    "ledger_ref": "pay_disp_06",
+    "expected_action": "retry_payout",
+    "customer_note": "Stripe payout failed with reason: no_account_at_routing."
+  },
+  {
+    "id": "disp_07",
+    "name": "Dispute: Ghost payment recorded locally but dropped before Stripe capture",
+    "kind": "missing_in_stripe",
+    "delta_minor": 12500,
+    "stripe_ref": "pi_disp_07",
+    "ledger_ref": "pay_disp_07",
+    "expected_action": "post_ledger_adjustment",
+    "customer_note": "Salon POS showed approved but Stripe gateway has no transaction record."
+  },
+  {
+    "id": "disp_08",
+    "name": "Dispute: Processing fee rate tier change discrepancy",
+    "kind": "amount_mismatch",
+    "delta_minor": 150,
+    "stripe_ref": "pi_disp_08",
+    "ledger_ref": "pay_disp_08",
+    "expected_action": "post_ledger_adjustment",
+    "customer_note": "Stripe fee deducted 3.1% instead of standard 2.9% + 30 cents."
+  },
+  {
+    "id": "disp_09",
+    "name": "Dispute: Assistant shampoo tip split allocation variance",
+    "kind": "amount_mismatch",
+    "delta_minor": 450,
+    "stripe_ref": "pi_disp_09",
+    "ledger_ref": "pay_disp_09",
+    "expected_action": "post_ledger_adjustment",
+    "customer_note": "Assistant share calculated as $4.50 instead of $9.00."
+  },
+  {
+    "id": "disp_10",
+    "name": "Dispute: Double deposit charged during website timeout",
+    "kind": "duplicate_charge",
+    "delta_minor": 6000,
+    "stripe_ref": "pi_disp_10",
+    "ledger_ref": "pay_disp_10",
+    "expected_action": "refund_customer",
+    "customer_note": "Customer hit refresh on slow wifi during booking deposit checkout."
+  }
+]

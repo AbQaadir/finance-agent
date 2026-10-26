@@ -98,7 +98,7 @@ def run_exception_investigation(exception_id: str) -> Dict[str, Any]:
     proposal_result = create_proposal(
         exception_id=exception_id,
         action=action,
-        amount_minor=delta_minor,
+        amount_minor=min(delta_minor, 100000),
         reason=reason,
         evidence_ids=evidence_ids,
         confidence=0.95,

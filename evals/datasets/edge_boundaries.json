@@ -1,0 +1,82 @@
+[
+  {
+    "id": "edge_01",
+    "name": "Edge: Minimal 1-cent variance threshold",
+    "kind": "amount_mismatch",
+    "delta_minor": 1,
+    "stripe_ref": "pi_edge_01",
+    "ledger_ref": "pay_edge_01",
+    "expected_action": "post_ledger_adjustment",
+    "customer_note": "1 cent variance between processing calculation and Stripe batch."
+  },
+  {
+    "id": "edge_02",
+    "name": "Edge: Exact upper safety boundary ($1,000.00 ceiling)",
+    "kind": "duplicate_charge",
+    "delta_minor": 100000,
+    "stripe_ref": "pi_edge_02",
+    "ledger_ref": "pay_edge_02",
+    "expected_action": "refund_customer",
+    "customer_note": "Exact $1,000.00 charge duplicated."
+  },
+  {
+    "id": "edge_03",
+    "name": "Edge: 99 cents micro-charge mismatch",
+    "kind": "amount_mismatch",
+    "delta_minor": 99,
+    "stripe_ref": "pi_edge_03",
+    "ledger_ref": "pay_edge_03",
+    "expected_action": "post_ledger_adjustment",
+    "customer_note": "Single product sample charge mismatch."
+  },
+  {
+    "id": "edge_04",
+    "name": "Edge: Large salon weekend settlement ($999.99)",
+    "kind": "missing_in_ledger",
+    "delta_minor": 99999,
+    "stripe_ref": "pi_edge_04",
+    "ledger_ref": null,
+    "expected_action": "post_ledger_adjustment",
+    "customer_note": "Full day salon suite rental fee."
+  },
+  {
+    "id": "edge_05",
+    "name": "Edge: Payout failure on single cent remainder",
+    "kind": "failed_payout",
+    "delta_minor": 1,
+    "stripe_ref": "po_edge_05",
+    "ledger_ref": "pay_edge_05",
+    "expected_action": "retry_payout",
+    "customer_note": "Remainder cent payout stuck."
+  },
+  {
+    "id": "edge_06",
+    "name": "Edge: Duplicate charge with exact 50/50 tip split",
+    "kind": "duplicate_charge",
+    "delta_minor": 5555,
+    "stripe_ref": "pi_edge_06",
+    "ledger_ref": "pay_edge_06",
+    "expected_action": "refund_customer",
+    "customer_note": "Odd cents tip split duplicate."
+  },
+  {
+    "id": "edge_07",
+    "name": "Edge: Missing webhook on exact dollar amount ($200.00)",
+    "kind": "missing_in_ledger",
+    "delta_minor": 20000,
+    "stripe_ref": "pi_edge_07",
+    "ledger_ref": null,
+    "expected_action": "post_ledger_adjustment",
+    "customer_note": "Round deposit amount."
+  },
+  {
+    "id": "edge_08",
+    "name": "Edge: Idempotent replay of already resolved charge",
+    "kind": "amount_mismatch",
+    "delta_minor": 1500,
+    "stripe_ref": "pi_edge_08",
+    "ledger_ref": "pay_edge_08",
+    "expected_action": "post_ledger_adjustment",
+    "customer_note": "Re-triggered sync after intermittent connection drop."
+  }
+]

@@ -185,6 +185,8 @@ def create_proposal(
             "status": "pending",
             "action": action,
             "amount_minor": amount_minor,
+            "reason": reason,
+            "evidence_ids": evidence_ids,
         }
 
 
