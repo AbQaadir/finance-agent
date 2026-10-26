@@ -21,6 +21,8 @@ def main():
     )
     parser.add_argument("--port", type=int, default=8000, help="Port to bind API service")
     parser.add_argument("--host", type=str, default="0.0.0.0", help="Host interface")
+    parser.add_argument("--mode", type=str, default="fast", choices=["fast", "full", "redteam", "reliability"], help="Evaluation benchmark mode")
+    parser.add_argument("--k", type=int, default=3, help="Number of trials for reliability pass^k mode")
 
     args = parser.parse_args()
 
@@ -52,7 +54,7 @@ def main():
 
     elif args.command == "evals":
         from evals.runner import run_benchmark
-        run_benchmark()
+        run_benchmark(mode=args.mode, k_trials=args.k if args.mode == "reliability" else 1)
 
     elif args.command == "live-test":
         from tests.live.test_live_e2e import run_live_test_suite

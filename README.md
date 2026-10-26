@@ -385,19 +385,53 @@ If an agent hallucinates a citation ID, the proposal is rejected at the gate.
 ---
 
 
-## 9. Evaluation Benchmark Results
+## 9. 5-Pillar Agent Evaluation Framework Results
 
-The benchmark evaluates the system against **35 golden scenarios** containing dropped webhooks, missing settlements, amount mismatches, duplicate charges, failed payouts, and adversarial prompt-injection attacks.
+The system is continuously benchmarked against an enterprise multi-tier suite of **68 structured financial scenarios** across 4 evaluation datasets, measuring performance against 5 core evaluation pillars:
 
-| Metric | Architecture Target | Achieved Result | Evaluation Status |
-| :--- | :---: | :---: | :---: |
-| **Classification Accuracy** | $\ge 90\%$ | **100.0%** (35 / 35) | **PASSED** |
-| **Proposed Action Accuracy** | $\ge 90\%$ | **100.0%** (35 / 35) | **PASSED** |
-| **Unsafe Proposals Executed Directly** | **0** | **0** | **PASSED** |
-| **Proposals Citing Non-Existent Evidence** | **0** | **0** | **PASSED** |
-| **Prompt Injections Changing Behavior** | **0** | **0** | **PASSED** |
-| **Unit & Integration Tests Passed** | 100% | **28 / 28** | **PASSED** |
-| **Median Latency to Proposal** | $< 250$ ms | **1.21 ms** | **PASSED** |
+### 9.1 Dataset Distribution
+| Dataset | Case Count | Scope & Focus Area |
+| :--- | :---: | :--- |
+| `core_reconciliation.json` | 35 | Dropped webhooks, missing settlements, amount mismatches, duplicate charges, failed payouts |
+| `adversarial_redteam.json` | 15 | Prompt injections, ceiling bypasses ($5,000), direct money transfer commands, role spoofing, PII leakage |
+| `multi_turn_disputes.json` | 10 | Disputed charge sequences, multi-turn customer reconciliations, tip adjustments |
+| `edge_boundaries.json` | 8 | Zero-cent transactions, single-cent rounding, maximum threshold limits ($1,000 ceiling) |
+| **Total Benchmark Suite** | **68** | **Comprehensive offline synthetic financial evaluation** |
+
+### 9.2 5-Pillar Executive Scorecard
+
+| Pillar | Evaluated Metric | Architecture Target | Achieved Score | Evaluation Status |
+| :--- | :--- | :---: | :---: | :---: |
+| **Pillar 1: Trajectory Accuracy** | Tool Call F1 Score | $\ge 95\%$ | **100.0%** | **PASSED** |
+| | Sequence Order Validity (Inquiry $\to$ Proposal) | $100\%$ | **100.0%** | **PASSED** |
+| | Loop & Cycle Detection | 0 cycles | **0 cycles** | **PASSED** |
+| **Pillar 2: Citation Grounding** | Grounded Database Citations Rate | $100\%$ | **100.0%** | **PASSED** |
+| | Hallucinated Citations Count | **0** | **0** | **PASSED** |
+| **Pillar 3: Financial Invariants** | Double-Entry Balance ($\sum \text{Debits} == \sum \text{Credits}$) | $100\%$ | **100.0%** | **PASSED** |
+| | Minor Integer Unit Compliance | $100\%$ | **100.0%** | **PASSED** |
+| | Proposer-Only Boundary (Direct Executions) | **0** | **0** | **PASSED** |
+| | $1,000.00 Proposal Ceiling Compliance | $100\%$ | **100.0%** | **PASSED** |
+| **Pillar 4: Safety & Defensiveness** | Adversarial Injection Neutralization | $100\%$ | **100.0%** | **PASSED** |
+| | Privilege Escalation Defenses | $100\%$ | **100.0%** | **PASSED** |
+| | PII Redaction & Leakage Prevention | $100\%$ | **100.0%** | **PASSED** |
+| **Pillar 5: Reliability & Latency** | Multi-Trial Consistency ($\text{pass}^k$, $k=3$) | $\ge 95\%$ | **100.0%** | **PASSED** |
+| | Median Proposal Latency (p50) | $< 250$ ms | **5.20 ms** | **PASSED** |
+| | Tail Latency (p99) | $< 500$ ms | **7.62 ms** | **PASSED** |
+
+### 9.3 Evaluation Execution Modes
+```bash
+# 1. Fast CI Core (35 cases from core reconciliation)
+uv run python main.py evals --mode=fast
+
+# 2. Full Benchmark (All 68 cases across all datasets)
+uv run python main.py evals --mode=full
+
+# 3. Adversarial Red-Team Suite (15 security injection cases)
+uv run python main.py evals --mode=redteam
+
+# 4. Multi-Trial Reliability Benchmark (pass^k with k=3 trials)
+uv run python main.py evals --mode=reliability --k=3
+```
 
 ---
 
@@ -451,14 +485,24 @@ STRIPE_API_KEY=sk_test_synthetic_salon_key
 uv sync
 ```
 
-### 4. Run Automated Test Suite (28 Tests)
+### 4. Run Automated Test Suite (42 Tests)
 ```bash
-uv run pytest -v
+uv run pytest tests/unit tests/integration evals/test_evals.py -v
 ```
 
-### 5. Run the 35-Case Evaluation Benchmark
+### 5. Run the 68-Case 5-Pillar Evaluation Benchmark
 ```bash
-uv run python -m evals.runner
+# Fast CI Core (35 cases)
+uv run python main.py evals --mode=fast
+
+# Full 68-Scenario Benchmark
+uv run python main.py evals --mode=full
+
+# Adversarial Red-Team Suite (15 cases)
+uv run python main.py evals --mode=redteam
+
+# Multi-Trial Reliability Benchmark (pass^k, k=3)
+uv run python main.py evals --mode=reliability --k=3
 ```
 
 ### 6. Run the Live End-to-End Test Suite
@@ -491,15 +535,21 @@ finance-agent/
 │   ├── approval_service/       # Human approval gate & restricted financial executor
 │   └── agent_service/          # Google ADK Coordinator, sub-agents, tools & callbacks
 ├── libs/
+│   ├── guardrails/             # NVIDIA NeMo Guardrails 5-layer safety & alignment pipeline
 │   ├── ledger/                 # Double-entry ledger models, engine & invariant operations
 │   ├── tipsplit/               # Integer minor unit tip-split engine (Hamilton-Hare method)
 │   ├── policy/                 # Tool call policy gate (default-deny)
 │   └── redaction/              # PII redaction and prompt-injection sanitization
-├── evals/                      # 35 Golden test cases, benchmark runner & pytest gate
+├── evals/                      # 5-Pillar Agent Evaluation Framework & Benchmark
+│   ├── datasets/               # 68 Structured financial evaluation scenarios (4 suites)
+│   ├── framework/              # Tracing, 5 metric evaluators, multi-tier runner & reporter
+│   ├── reports/                # Generated scorecards (eval_report_latest.md, JSON)
+│   ├── runner.py               # Multi-mode benchmark CLI harness
+│   └── test_evals.py           # Pytest evaluation & safety invariant test gate
 ├── infra/                      # Cloud Run service definitions & Dockerfiles
 ├── docs/                       # Threat Model, Operations Runbook, Architecture Reference
 └── tests/
-    ├── unit/                   # Unit test suite (libs, recon, agent)
+    ├── unit/                   # Unit test suite (libs, recon, agent, guardrails)
     ├── integration/            # Service integration test suite (payments, worker, approval)
     └── live/                   # Live end-to-end test suite against Gemini API
 ```

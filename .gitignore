@@ -18,3 +18,6 @@ wheels/
 CLAUDE.local.md
 .claude/settings.local.json
 .claude/worktrees/
+
+# Evaluation timestamped runs (keep latest.md and latest.json)
+evals/reports/eval_report_20*.json

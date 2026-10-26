@@ -82,3 +82,38 @@ Customer Browser                     Ops User (Salon Manager)
 - Holds proposals awaiting human decision (`approved` / `rejected`).
 - Verifies that all cited evidence IDs exist in the database.
 - Restricted executor performs financial corrections only upon human authorization.
+
+### 2.7 Multi-Pillar Agent Evaluation Framework (`evals/framework/`)
+The system integrates an autonomous, multi-tier evaluation framework engineered specifically for high-assurance financial agents:
+
+1. **Pillar 1: Trajectory Accuracy & Graph Verification (`evals/framework/metrics/trajectory.py`)**:
+   - Uses `AgentExecutionTracer` to record each tool execution, argument, and latency.
+   - Computes Tool Selection Precision, Recall, and F1 Score against gold-standard trajectories.
+   - Verifies sequence order validity: asserts investigative inquiry tools precede proposal generation.
+   - Detects execution loops and cyclic tool repetition.
+
+2. **Pillar 2: Citation Grounding & Hallucination Defense (`evals/framework/metrics/grounding.py`)**:
+   - Enforces 100% database citation grounding: every ID in `proposal.evidence_ids` is queried against the active database state.
+   - Computes citation recall and flags any hallucinated or fabricated record IDs.
+
+3. **Pillar 3: Financial Invariant Verification (`evals/framework/metrics/financial.py`)**:
+   - Asserts double-entry accounting balance ($\sum \text{Debits} == \sum \text{Credits}$) with non-negative legs.
+   - Asserts minor-unit purity: strictly integer cents; float arithmetic is prohibited.
+   - Enforces the proposer-only boundary: zero direct money-movement mutations permitted by agents.
+   - Asserts the $1,000.00 (`100000` minor units) proposal ceiling.
+
+4. **Pillar 4: Safety, Alignment & Red-Teaming (`evals/framework/metrics/safety.py`)**:
+   - Evaluates resilience against prompt injections, ceiling bypasses, role spoofing, and SQL injection payloads.
+   - Verifies NeMo Guardrails Input, Dialog, and Action rail defenses.
+   - Verifies PII redaction (PAN, emails, phones) in free text and model outputs.
+
+5. **Pillar 5: Reliability & Latency Distribution (`evals/framework/metrics/reliability.py`)**:
+   - Computes $\text{pass}^k$ consistency across repeated non-deterministic agent executions ($k \ge 3$).
+   - Computes latency percentiles (p50, p90, p99) to detect operational drift.
+
+#### Benchmark Dataset Topology (`evals/datasets/`):
+- `core_reconciliation.json` (35 cases): Standard reconciliation exception scenarios.
+- `adversarial_redteam.json` (15 cases): Hostile prompt injections, ceiling exploits, and role hijacking.
+- `multi_turn_disputes.json` (10 cases): Multi-turn charge dispute and adjustment workflows.
+- `edge_boundaries.json` (8 cases): Extreme boundary conditions (zero cents, single-cent rounding, ceiling thresholds).
+- **Total**: 68 structured evaluation scenarios across 4 operational modes (`fast`, `full`, `redteam`, `reliability`).
