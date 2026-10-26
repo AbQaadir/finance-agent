@@ -69,20 +69,20 @@ class EvaluationReporter:
         print("\n" + "=" * 80)
         print(f" SALON PAYMENTS OPS AGENT - EVALUATION BENCHMARK (Mode: {sc.mode.upper()})")
         print("=" * 80)
-        print(f"  • Total Test Cases:               {sc.total_cases}")
-        print(f"  • Overall Evaluation Pass Rate:   {sc.overall_success_rate:.1f}% ({sc.passed_cases}/{sc.total_cases})")
-        print(f"  • Anomaly Classification:         {sc.classification_accuracy:.1f}%")
-        print(f"  • Proposed Action Accuracy:       {sc.action_accuracy:.1f}%")
-        print(f"  • Citation Grounding Rate:        {sc.grounding_rate:.1f}%")
-        print(f"  • Financial Invariant Adherence:  {sc.financial_compliance_rate:.1f}%")
-        print(f"  • Safety & Red-Team Defense:      {sc.safety_pass_rate:.1f}%")
+        print(f"  * Total Test Cases:               {sc.total_cases}")
+        print(f"  * Overall Evaluation Pass Rate:   {sc.overall_success_rate:.1f}% ({sc.passed_cases}/{sc.total_cases})")
+        print(f"  * Anomaly Classification:         {sc.classification_accuracy:.1f}%")
+        print(f"  * Proposed Action Accuracy:       {sc.action_accuracy:.1f}%")
+        print(f"  * Citation Grounding Rate:        {sc.grounding_rate:.1f}%")
+        print(f"  * Financial Invariant Adherence:  {sc.financial_compliance_rate:.1f}%")
+        print(f"  * Safety & Red-Team Defense:      {sc.safety_pass_rate:.1f}%")
         if sc.k_trials > 1:
-            print(f"  • Multi-Trial Reliability pass^{sc.k_trials}: {sc.pass_at_k:.1f}%")
+            print(f"  * Multi-Trial Reliability pass^{sc.k_trials}: {sc.pass_at_k:.1f}%")
         print("-" * 80)
-        print(f"  • Hallucinated Evidence Citations: {sc.hallucinated_citations_count} (Target: 0)")
-        print(f"  • Unsafe Direct Executions:        {sc.unsafe_executions_count} (Target: 0)")
-        print(f"  • Injections Compromised:          {sc.injections_compromised_count} (Target: 0)")
-        print(f"  • Latency Distribution:            p50={sc.latency_p50_ms:.2f}ms | p90={sc.latency_p90_ms:.2f}ms | p99={sc.latency_p99_ms:.2f}ms")
+        print(f"  * Hallucinated Evidence Citations: {sc.hallucinated_citations_count} (Target: 0)")
+        print(f"  * Unsafe Direct Executions:        {sc.unsafe_executions_count} (Target: 0)")
+        print(f"  * Injections Compromised:          {sc.injections_compromised_count} (Target: 0)")
+        print(f"  * Latency Distribution:            p50={sc.latency_p50_ms:.2f}ms | p90={sc.latency_p90_ms:.2f}ms | p99={sc.latency_p99_ms:.2f}ms")
         print("=" * 80 + "\n")
 
     def export_markdown_report(self, filename: str = "eval_report_latest.md") -> Path:
@@ -126,5 +126,8 @@ class EvaluationReporter:
         stamp = datetime.now(timezone.utc).strftime("%Y%m%d_%H%M%S")
         json_path = self.output_dir / f"eval_report_{stamp}.json"
         with open(json_path, "w", encoding="utf-8") as f:
+            json.dump(asdict(self.scorecard), f, indent=2)
+        # Also persist latest symlink/file for deterministic CI/CD inspection
+        with open(self.output_dir / "eval_report_latest.json", "w", encoding="utf-8") as f:
             json.dump(asdict(self.scorecard), f, indent=2)
         return json_path

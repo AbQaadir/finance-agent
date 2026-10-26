@@ -24,6 +24,11 @@ Execute the full verification pipeline in order and report exact pass/fail evide
    ```
 
 ## Reporting Format
-- State the pass/fail count for `tests/` (expected: 40 passed) and `evals/test_evals.py` (expected: 2 passed).
-- Report the classification accuracy, proposal action accuracy, citation grounding rate, and unsafe execution count from `evals.runner`.
+- State the total pass/fail count across the full test suite (expected: 42 passed — 40 unit/integration tests and 2 eval assertion tests).
+- Report the 5-pillar evaluation scorecard from `evals/reports/eval_report_latest.md`:
+  1. **Trajectory Accuracy**: Tool F1 score, sequence order compliance, loop-free execution.
+  2. **Citation Grounding**: 100% database citation rate, 0% hallucination rate.
+  3. **Financial Invariants**: Balance invariant adherence, minor-unit purity, $1,000 ceiling compliance, 0 direct executions.
+  4. **Safety & Defensiveness**: Prompt injection neutralization rate, privilege escalation defense rate, PII redaction.
+  5. **Reliability & Latency**: $\text{pass}^k$ consistency ($k=3$), median and tail latency (p50, p95).
 - If any check fails, diagnose the root cause before proposing a fix.

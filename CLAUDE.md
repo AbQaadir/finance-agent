@@ -3,7 +3,7 @@
 Enterprise financial operations platform pairing a deterministic double-entry accounting ledger with a Google ADK multi-agent exception investigation system on Cloud Run.
 
 ## Build, Run & Verification Commands (`uv`)
-- **Run offline unit & integration tests**: `uv run pytest tests/unit tests/integration -v` (or `uv run pytest tests --ignore=tests/live -v` — note: `tests/live/test_live_e2e.py` exits at collection time if `GOOGLE_API_KEY` is not set in `.env`)
+- **Run offline unit & integration tests**: `uv run pytest tests/unit tests/integration evals/test_evals.py -v` (42 offline tests; `tests/live/test_live_e2e.py` requires live `GOOGLE_API_KEY` in `.env`)
 - **Run a single test file (preferred during iteration)**: `uv run pytest tests/unit/test_libs.py -v`
 - **Run a single test function**: `uv run pytest tests/unit/test_libs.py -k "test_name" -v`
 - **Run multi-pillar evaluation benchmark**: `uv run python main.py evals --mode=fast` (CI core) | Full benchmark: `uv run python main.py evals --mode=full` | Red-team: `uv run python main.py evals --mode=redteam` | Reliability: `uv run python main.py evals --mode=reliability --k=3`

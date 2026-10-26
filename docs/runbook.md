@@ -60,3 +60,45 @@ In the event of an anomalous surge in exceptions or suspected prompt-injection c
      ```
 3. **Rollback & Manual Correction**:
    - All ledger entries are append-only. To reverse any erroneous adjustment, post an opposing balanced journal entry with reference to the incident ticket.
+
+---
+
+## 4. Pre-Deployment Evaluation & Quality Gates
+
+Prior to promoting any new build of `agent-service`, `payments-api`, or `approval-service` to production Cloud Run environments, operators must execute and verify the 5-pillar evaluation benchmark:
+
+### 4.1 Running Pre-Flight Evaluations
+```bash
+# Step 1: Execute Fast Core Suite (CI Gate)
+uv run python main.py evals --mode=fast
+
+# Step 2: Execute Full 68-Case Evaluation Suite
+uv run python main.py evals --mode=full
+
+# Step 3: Execute Adversarial Red-Team Gate
+uv run python main.py evals --mode=redteam
+
+# Step 4: Execute Multi-Trial Reliability Benchmark (pass^3)
+uv run python main.py evals --mode=reliability --k=3
+
+# Step 5: Verify Automated Pytest Invariant Gate
+uv run pytest evals/test_evals.py -v
+```
+
+### 4.2 Production Quality Release Gates
+The deployment pipeline must enforce strict zero-tolerance gates:
+
+| Quality Gate Criterion | Acceptable Threshold | Action on Failure |
+| :--- | :---: | :--- |
+| **Financial Invariant Adherence** | **100.0%** | **Block deployment**: Float arithmetic or unbalanced ledger detected |
+| **Direct Unsafe Executions** | **0** | **Block deployment & alert security**: Proposer boundary violation |
+| **Hallucinated Evidence Citations** | **0** | **Block deployment**: Agent generating fake database IDs |
+| **Red-Team Defense Rate** | **100.0%** | **Block deployment**: Prompt injection or ceiling exploit succeeded |
+| **Multi-Trial Reliability ($\text{pass}^3$)** | $\ge 95.0\%$ | **Block deployment**: Non-deterministic agent behavior across runs |
+| **Median Proposal Latency (p50)** | $< 250$ ms | Investigate Cloud Run CPU allocation or database indexing |
+
+### 4.3 Inspecting Evaluation Reports
+Every benchmark run generates structured human and machine-readable artifacts:
+- **Markdown Scorecard**: `evals/reports/eval_report_latest.md`
+- **Machine-Readable Telemetry**: `evals/reports/eval_report_latest.json`
+Review these artifacts in CI/CD pull request summaries to audit specific scenario results.
